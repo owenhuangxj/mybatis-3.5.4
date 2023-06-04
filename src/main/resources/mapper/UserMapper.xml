@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.apache.ibatis.helloworld.mapper.UserMapper">
+  <cache />
+  <resultMap id="BaseResultMap" type="org.apache.ibatis.helloworld.entity.User">
+    <id property="id" column="id" jdbcType="BIGINT"/>
+    <result property="name" column="name" jdbcType="VARCHAR"/>
+    <result property="age" column="age" jdbcType="INTEGER"/>
+  </resultMap>
+  <!-- statementType 默认为PREPARED，还有STATEMENT和CALLABLE,StatementType中定义 -->
+  <sql id="BaseSQL">
+    id,name,age
+  </sql>
+
+  <select id="getOneById" resultMap="BaseResultMap" statementType="PREPARED">
+    select <include refid="BaseSQL"/>from user_t where id = #{id}
+  </select>
+
+  <select id="getUsers" resultMap="BaseResultMap">
+    select <include refid="BaseSQL"/>from user_t
+    <where>
+      <if test="name != null">
+        and name = #{name}
+      </if>
+      <if test="age != null">
+        and age = #{age}
+      </if>
+    </where>
+  </select>
+  <parameterMap id="ids" type="java.util.Collection">
+    <parameter property="ids" typeHandler="org.apache.ibatis.type.ArrayTypeHandler" javaType="java.util.Collection"/>
+  </parameterMap>
+
+  <select id="getUsersByIds" resultMap="BaseResultMap" statementType="PREPARED" parameterMap = "ids">
+    select <include refid="BaseSQL"/> from user_t
+    where id
+    <foreach collection="ids" item="id" open="in(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </select>
+  <select id="getUsersByNameAndAge" resultMap="BaseResultMap">
+    select <include refid="BaseSQL"/> from user_t
+    where name = #{name} and age = #{age}
+  </select>
+</mapper>
